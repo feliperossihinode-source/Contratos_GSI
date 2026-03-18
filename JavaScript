@@ -1,5 +1,23 @@
-const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRGkdiUI7_qFVRkIMMuHSi8b1eKClEYr7v5DHcKtWmPWUGwW2V8CtHLqcc-cYzotEaS12Hdhem1mbSs/pub?gid=2757110&single=true&output=csv";
-if (csv.includes("<html")) {
-  alert("ERRO: você está usando link errado (pubhtml)");
-  return;
+const url = "https://docs.google.com/spreadsheets/d/1R6384x8by46nUVnpYwGIomjmt5zPIG1dDPJCE-4RERw/export?format=csv";
+
+fetch(url)
+  .then(res => res.text())
+  .then(csv => {
+    const linhas = csv.split("\n").map(l => l.split(","));
+    console.log(linhas);
+  });
+// login.js
+import { signInWithEmailAndPassword } from "firebase/auth";
+
+loginBtn.onclick = () => {
+  signInWithEmailAndPassword(auth, email.value, senha.value)
+    .then(user => {
+      window.location.href = "dashboard.html";
+    })
+    .catch(err => alert("Erro login"));
+};
+import { createUserWithEmailAndPassword } from "firebase/auth";
+
+function criarUsuario(email, senha) {
+  createUserWithEmailAndPassword(auth, email, senha);
 }
