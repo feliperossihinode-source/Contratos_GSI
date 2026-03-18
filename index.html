@@ -1,161 +1,60 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Dashboard de Contratos</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<title>Login</title>
 <style>
 body {
-  font-family: Arial;
   background: #0f172a;
   color: white;
-  padding: 20px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  font-family: Arial;
 }
-
-h1 {
-  margin-bottom: 20px;
+.box {
+  background:#1e293b;
+  padding:30px;
+  border-radius:10px;
 }
-
-.cards {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 30px;
+input {
+  display:block;
+  margin:10px 0;
+  padding:10px;
 }
-
-.card {
-  background: #1e293b;
-  padding: 20px;
-  border-radius: 12px;
-  flex: 1;
-  text-align: center;
-  font-size: 18px;
+button {
+  padding:10px;
+  width:100%;
 }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 30px;
-  background: #1e293b;
-}
-
-th, td {
-  padding: 10px;
-  border-bottom: 1px solid #334155;
-  text-align: left;
-}
-
-th {
-  background: #020617;
-}
-
-.status-ativo { color: #22c55e; }
-.status-vencendo { color: #facc15; }
-.status-vencido { color: #ef4444; }
-
 </style>
 </head>
 
 <body>
 
-<h1>📊 Dashboard de Contratos</h1>
-
-<div class="cards">
-  <div class="card" id="ativos">Ativos: 0</div>
-  <div class="card" id="vencendo">Vencendo: 0</div>
-  <div class="card" id="vencidos">Vencidos: 0</div>
-  <div class="card" id="total">Total: 0</div>
+<div class="box">
+<h2>Login</h2>
+<input id="user" placeholder="Usuário">
+<input id="pass" type="password" placeholder="Senha">
+<button onclick="login()">Entrar</button>
 </div>
 
-<canvas id="grafico"></canvas>
-
-<table>
-<thead>
-<tr>
-<th>Número</th>
-<th>Empresa</th>
-<th>Início</th>
-<th>Fim</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody id="tabela"></tbody>
-</table>
-
 <script>
+async function login(){
+  const user = document.getElementById('user').value;
+  const pass = document.getElementById('pass').value;
 
-const url = "https://docs.google.com/spreadsheets/d/12GGJR4LwWOTXpA7eKJOuHgLRSfDjvhvjy7qGaep37Bg/export?format=csv";
+  const res = await fetch('users.json');
+  const users = await res.json();
 
-fetch(url)
-.then(res => res.text())
-.then(csv => {
+  const encontrado = users.find(u => u.usuario === user && u.senha === pass);
 
-  const linhas = csv.trim().split("\n");
-
-  const data = linhas.slice(1).map(linha => {
-    const colunas = linha.split(",");
-
-    const hoje = new Date();
-    const fim = new Date(colunas[3]);
-
-    let status = "ativo";
-
-    const diff = (fim - hoje) / (1000 * 60 * 60 * 24);
-
-    if (diff <= 30 && diff > 0) status = "vencendo";
-    if (diff <= 0) status = "vencido";
-
-    return {
-      numero: colunas[0],
-      empresa: colunas[1],
-      inicio: colunas[2],
-      fim: colunas[3],
-      status: status
-    };
-  });
-
-  carregarDashboard(data);
-
-});
-
-function carregarDashboard(data) {
-
-  let ativos = data.filter(c => c.status === "ativo").length;
-  let vencendo = data.filter(c => c.status === "vencendo").length;
-  let vencidos = data.filter(c => c.status === "vencido").length;
-
-  document.getElementById('ativos').innerText = "Ativos: " + ativos;
-  document.getElementById('vencendo').innerText = "Vencendo: " + vencendo;
-  document.getElementById('vencidos').innerText = "Vencidos: " + vencidos;
-  document.getElementById('total').innerText = "Total: " + data.length;
-
-  new Chart(document.getElementById('grafico'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Ativos', 'Vencendo', 'Vencidos'],
-      datasets: [{
-        data: [ativos, vencendo, vencidos]
-      }]
-    }
-  });
-
-  const tabela = document.getElementById('tabela');
-
-  data.forEach(c => {
-    tabela.innerHTML += `
-      <tr>
-        <td>${c.numero}</td>
-        <td>${c.empresa}</td>
-        <td>${c.inicio}</td>
-        <td>${c.fim}</td>
-        <td class="status-${c.status}">${c.status}</td>
-      </tr>
-    `;
-  });
-
+  if(encontrado){
+    localStorage.setItem("user", JSON.stringify(encontrado));
+    window.location.href = "dashboard.html";
+  } else {
+    alert("Login inválido");
+  }
 }
-
 </script>
 
 </body>
