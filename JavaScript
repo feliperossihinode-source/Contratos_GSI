@@ -21,3 +21,21 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 function criarUsuario(email, senha) {
   createUserWithEmailAndPassword(auth, email, senha);
 }
+const dados = {};
+
+linhas.slice(1).forEach(l => {
+  const empresa = l[6];
+  const valor = parseFloat(l[7].replace("R$", "").replace(",", "."));
+
+  dados[empresa] = (dados[empresa] || 0) + valor;
+});
+
+new Chart(ctx, {
+  type: 'pie',
+  data: {
+    labels: Object.keys(dados),
+    datasets: [{
+      data: Object.values(dados)
+    }]
+  }
+});
