@@ -1,0 +1,44 @@
+const url = https://docs.google.com/spreadsheets/d/12GGJR4LwWOTXpA7eKJOuHgLRSfDjvhvjy7qGaep37Bg/edit?usp=sharing;
+
+fetch(url)
+  .then(response => response.text())
+  .then(csv => {
+
+    const linhas = csv.split("\n").slice(1);
+
+    const data = linhas.map(linha => {
+      const colunas = linha.split(",");
+
+      return {
+        numero: colunas[0],
+        empresa: colunas[1],
+        inicio: colunas[2],
+        fim: colunas[3],
+        valor: Number(colunas[4]),
+        status: colunas[5]
+      };
+    });
+
+    carregarDashboard(data);
+  });
+
+function carregarDashboard(data) {
+
+  let ativos = data.filter(c => c.status === "ativo").length;
+  let vencendo = data.filter(c => c.status === "vencendo").length;
+  let vencidos = data.filter(c => c.status === "vencido").length;
+
+  document.getElementById('ativos').innerText = "Ativos: " + ativos;
+  document.getElementById('vencendo').innerText = "Vencendo: " + vencendo;
+  document.getElementById('vencidos').innerText = "Vencidos: " + vencidos;
+
+  new Chart(document.getElementById('grafico'), {
+    type: 'pie',
+    data: {
+      labels: ['Ativos', 'Vencendo', 'Vencidos'],
+      datasets: [{
+        data: [ativos, vencendo, vencidos]
+      }]
+    }
+  });
+}
