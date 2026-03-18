@@ -1,0 +1,21 @@
+fetch(url)
+  .then(response => response.text())
+  .then(csv => {
+
+    const linhas = csv.trim().split("\n");
+    const cabecalho = linhas[0].split(",");
+
+    const data = linhas.slice(1).map(linha => {
+      const colunas = linha.split(",");
+
+      return {
+        numero: colunas[0]?.trim(),
+        empresa: colunas[1]?.trim(),
+        inicio: colunas[2]?.trim(),
+        fim: colunas[3]?.trim(),
+        valor: Number(colunas[4]) || 0
+      };
+    });
+
+    carregarDashboard(data);
+  });
