@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+  background:#0f172a;
+  color:white;
+  font-family:Arial;
+  padding:20px;
+}
+
+.cards {
+  display:flex;
+  gap:20px;
+}
+
+.card {
+  background:#1e293b;
+  padding:20px;
+  border-radius:10px;
+  flex:1;
+}
+
+table {
+  width:100%;
+  margin-top:20px;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding:8px;
+  border-bottom:1px solid #334155;
+}
+
+.status-ativo {color: #22c55e;}
+.status-vencendo {color: #facc15;}
+.status-vencido {color: #ef4444;}
+
+canvas {
+  max-width: 400px;
+  margin: auto;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Dashboard de Contratos</h1>
+
+<div class="cards">
+<div class="card" id="ativos"></div>
+<div class="card" id="vencendo"></div>
+<div class="card" id="vencidos"></div>
+</div>
+
+<canvas id="grafico"></canvas>
+
+<table>
+<thead id="thead"></thead>
+<tbody id="tbody"></tbody>
+</table>
+
+<script>
+
+const url = "COLE_AQUI_O_LINK_CSV";
+
+fetch(url)
+.then(res => res.text())
+.then(csv => {
+
+  const linhas = csv.trim().split("\n");
+  const headers = linhas[0].split(",");
+
+  document.getElementById("thead").innerHTML =
+    "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "<th>Status</th></tr>";
+
+  const data = linhas.slice(1).map(l => {
+    const col = l.split(",");
+
+    const validade = new Date(col[9]); // coluna VALIDADE
+
+    const hoje = new Date();
+    let status = "ativo";
+
+    const diff = (validade - hoje)/(1000*60*60*24);
+
+    if(diff <= 30 && diff > 0) status = "vencendo";
+    if(diff <= 0) status = "vencido";
+
+    return { col, status };
+  });
+
+  let ativos = 0, vencendo = 0, vencidos = 0;
+
+  const tbody = document.getElementById("tbody");
+
+  data.forEach(d => {
+
+    if(d.status === "ativo") ativos++;
+    if(d.status === "vencendo") vencendo++;
+    if(d.status === "vencido") vencidos++;
+
+    tbody.innerHTML += `
+      <tr>
+        ${d.col.map(c => `<td>${c}</td>`).join("")}
+        <td class="status-${d.status}">${d.status}</td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("ativos").innerText = "Ativos: " + ativos;
+  document.getElementById("vencendo").innerText = "Vencendo: " + vencendo;
+  document.getElementById("vencidos").innerText = "Vencidos: " + vencidos;
+
+  new Chart(document.getElementById('grafico'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Ativos','Vencendo','Vencidos'],
+      datasets: [{
+        data: [ativos,vencendo,vencidos]
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          labels: {
+            color: 'white'
+          }
+        }
+      }
+    }
+  });
+
+});
+
+</script>
+
+</body>
+</html>
